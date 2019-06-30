@@ -1,0 +1,293 @@
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const bodyParser = require('body-parser');
+
+const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+
+const Product = require('../models/products');
+const CheckAuth = require('../middlewares/check-auth');
+
+const path = require('path');
+const ROOT_PATH = path.dirname(process.mainModule.filename);
+
+const storage = multer.diskStorage({
+                                        destination: function(req, file, cb){
+                                            cb(null, './uploads/');
+
+                                        },
+                                        filename: function(req, file, cb){
+                                            cb(null, new Date().toISOString() + file.originalname);
+                                        }
+                                    
+                                    });
+
+const fileFilter = (req, file, cb) => {
+
+    if(file.mimetype === 'image/jpg' || file.mimetype === 'image/png')
+    {
+        cb(null, true);
+    }
+    else
+    {
+        cb(null, false);
+    }
+    
+    
+};                                    
+
+const upload = multer({storage: storage, limits: {
+    fileSize: 1024 * 1024 * 7,
+    fileFilter: fileFilter
+
+}});
+
+//router.get('/products');
+
+/**
+ * @swagger
+ * /products:
+ *   post:
+ *     description: Get All Products
+ *     produces:
+ *       - application/json
+ *     security:
+ *       - ApiKeyAuth: []
+ *     responses:
+ *       200:
+ *         description: Get All Products
+ */
+router.get('/', (req, res, next) => {
+    //res.status(200).json({ message: 'Welcome to Products Routes via method GET'});
+
+
+
+    const mail_transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: 
+        { 
+          user: 'cabanban.anna@gmail.com',
+          pass: '20152501'
+        }
+    });
+
+    const mail_options = {
+        from: 'cabanban.anna@gmail.com',
+        to: 'cabanban.anna@gmail.com',
+        subject: 'Using Node REST API - Mailer',
+        html: 'Hello World',
+        attachments: {
+            path: ROOT_PATH + '/uploads/' + 'test.png'
+        }
+    }
+
+    mail_transporter.sendMail(mail_options, (error, info)=>{
+        console.log(info);
+        console.log(error);
+    })
+    
+
+    Product.find()
+    .select('name price _id')
+    .exec()
+    .then(docs=>{  
+                console.log(docs); 
+                //res.status(200).json(docs); 
+
+                if(docs.length >= 0)
+                {
+                    const response = {count: 0, products: {}};
+                    response.count = docs.length;
+                    
+                    response.products = docs.map(doc=>{
+                        return {id: doc._id, 
+                                name: doc.name, 
+                                price: doc.price, 
+                                imageurl: 'http://localhost:3000/uploads' + doc.imageurl, 
+                                request: {
+                                    type: 'GET',
+                                    url: 'http://localhost:3000/products/' + doc._id
+                                }
+                            }
+                    });
+
+
+                    res.status(200).json(response);
+                }
+                else
+                {
+                    res.status(404).json({message: 'No entries found'});
+                }
+    })
+    .catch(err=>{console.log(err); res.status(500).json({error: err});});
+
+});
+
+
+//{
+//    "name": "Haarier Potter",
+//    "description": "xxxxxxxxxxxxxxxxxx",
+//    "price": 199.99
+// 
+// }
+router.post('/', CheckAuth, upload.single('imageurl'), (req, res, next) => {
+
+    const filePath = req.file.path;
+    console.log(filePath);
+
+    //const product = {
+    //    name: req.body.name,
+    //    description: req.body.description,
+    //    price: req.body.price
+    //};
+
+    const product = new Product({
+        _id: new mongoose.Types.ObjectId(),
+        name: req.body.name,
+        price: req.body.price,
+        imageurl: req.file.path
+    });
+
+    product.save()
+           .then(result=>{
+            console.log('---------------------------------------');
+            console.log(req.file);
+
+
+
+               console.log('---------------------------------------');
+               console.log(result);
+               console.log('---------------------------------------');
+
+               res.status(201).json({ 
+                    message: 'Welcome to Products Routes via method POST',
+                    createdProduct: 
+
+                                    {id: result._id, 
+                                        name: result.name, 
+                                        price: result.price, 
+                                        imageurl: 'http://localhost:3000/' + result.imageurl, 
+                                        
+                                    },
+                            request: {
+                                            type: 'GET',
+                                            url: 'http://localhost:3000/products/' + result._id
+                                        }      
+
+
+
+
+               });
+            })
+           .catch(err=>{
+               console.log(err)
+               res.status(500).json({error: err})
+            });
+
+
+  
+});
+
+router.get('/:productId', (req, res, next)=>{
+    const id = req.params.productId;
+    //let msg = '';
+    //
+    //if( id === 'special' )
+    //{
+    //    msg = 'You discovered the special ID';
+    //}
+    //else
+    //{
+    //    msg = 'You passed an ID';
+    //}
+
+    
+    Product.findById(id)
+    .select('_id name price imageurl')
+    .exec()
+    .then(doc=>{  
+                console.log(doc); 
+                //res.status(200).json(doc); 
+
+
+                const response = {count: 0, products: {}};
+                response.count = 1;
+                
+                response.products = {id: doc._id, 
+                                    name: doc.name, 
+                                    price: doc.price, 
+                                    imageurl: 'http://localhost/uploads' + doc.imageurl, 
+                                    request: {
+                                        type: 'GET',
+                                        url: 'http://localhost:3000/products/' + doc._id
+                                    }
+                };
+
+
+                res.status(200).json(response);
+
+
+    })
+    .catch(err=>{console.log(err); res.status(500).json({error: err});});
+
+
+    //res.status(200).json({message: msg});
+});
+
+
+//[
+//    {
+//       "propName": "name",
+//       "value": "Haarier Potter"
+//    },	
+//    {
+//        "propName": "price",
+//        "value": 9999
+//     },	
+// 
+//]
+    
+router.patch('/:productId', (req, res, next) => {
+    const id = req.params.productId;
+
+    //res.status(200).json({ message: `Product ${id} was successfully updated`});
+    console.log(id);
+    console.log(req.body);
+
+    const updateOps = {};
+    for(const ops of req.body)
+    {
+         updateOps[ops.propName] = ops.value;
+    }
+
+    console.log(updateOps);
+
+
+    //Product.update({_id: id}, {$set: {name: req.body.name, price: req.body.price}})
+
+    Product.update({_id: id}, {$set: updateOps})
+    .exec()
+    .then(result=>{  
+                res.status(200).json(result); 
+    })
+    .catch(err=>{console.log(err); res.status(500).json({error: err});});    
+
+});
+
+router.delete('/:productId', (req, res, next) => {
+    const id = req.params.productId;
+    //res.status(200).json({ message: `Product ${id} was successfully deleted`});
+
+    Product.remove({_id: id})
+    .exec()
+    .then(result=>{  
+                res.status(200).json(result); 
+    })
+    .catch(err=>{console.log(err); res.status(500).json({error: err});});    
+
+});
+
+
+module.exports = router;
+

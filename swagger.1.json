@@ -1,0 +1,74 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Hello World Restful Node API",
+        "description": "Hello World",
+        "license": {
+            "name": "MIT",
+            "url": "www.domain.com"
+        }
+    },
+
+    "host": "localhost:3000/swagger",
+    "basepath": "",
+    "tags": {
+        "name": "Product",
+        "description": "Hellow World"
+    },
+    
+    "schemes":["http", "https"],
+    "consumes":["application/json"],
+    "produces": ["application/json"],
+
+
+
+    "paths":{
+        "/products":{
+            "get":{
+                "tags": ["Products"],
+                "summary": "Get All Products",
+                "response": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Products"
+                        }
+                    }
+                }
+
+            }
+        }
+
+    },
+
+    "definitions": {
+        "Product":{
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "producturl": {
+                    "type": "string"
+                }
+            }
+
+        },
+        "Products": {
+            "type": "object",
+            "properties":{
+                "products": {
+                    "type": "object",
+                    "additionalProperites": {
+                        "$ref": "#/definitions/Product"
+                    }
+                }
+            }
+
+        }
+    }
+}

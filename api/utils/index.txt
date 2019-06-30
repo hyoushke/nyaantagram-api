@@ -1,0 +1,7 @@
+asciiart
+jimp
+mailer
+mongoose
+pdf
+qrcode
+webshot

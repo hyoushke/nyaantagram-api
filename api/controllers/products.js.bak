@@ -1,0 +1,102 @@
+const ProductsService = require('../services/products');
+const UtilsMailer = require('../utils/mailer');
+//goal 
+//controllers only accepts req, res, next
+//controllers only response with *response*
+//controllers will not process anything and will only
+//pass data from *req* to services
+
+class Products {
+    static GetAllProducts(){
+        
+    }
+}
+
+exports.products_get_all = async (req, res, next)=>{
+    try
+    {
+        var mailer = await UtilsMailer.send_mail();
+
+        var data = await ProductsService.products_service_get_all();
+        console.log('-----------------------------');
+        console.log(data);
+        console.log('-----------------------------');
+        //throw new error;
+
+        res.status(200).json(data);
+
+    }
+    catch(error)
+    {
+        res.status(400).json({
+            "code": 0,
+            "message": "Fetch Products Failed",
+            "url": "http://localhost:3000/" + "products"
+        })
+    }
+}
+
+
+exports.products_create_new = async (req, res, next)=>{
+    try
+    {
+        const name = req.body.name;
+        const price = req.body.price;
+        const imageurl = req.file.path;
+
+        console.log('*****************************************************');
+        console.log(name);
+        console.log(price);
+        console.log(imageurl);
+        console.log('*****************************************************');
+
+
+
+        var product_object = await ProductsService.products_service_create_new(name, price, imageurl);
+
+        //console.log(product_object);
+
+        res.status(200).json(product_object);
+
+    }
+    catch(error)
+    {
+        res.status(400).json({
+            "code": 0,
+            "message": "Create Products failed",
+            "url": "http://localhost:3000/" + "products",
+            "error": error
+        })
+    }
+}
+
+
+
+
+
+
+
+exports.products_get_all = async (req, res, next)=>{
+    try
+    {
+        var mailer = await UtilsMailer.send_mail();
+
+        var data = await ProductsService.products_service_get_all();
+        console.log('-----------------------------');
+        console.log(data);
+        console.log('-----------------------------');
+        //throw new error;
+
+        res.status(200).json(data);
+
+    }
+    catch(error)
+    {
+        res.status(400).json({
+            "code": 0,
+            "message": "Fetch Products Failed",
+            "url": "http://localhost:3000/" + "products"
+        })
+    }
+}
+ 

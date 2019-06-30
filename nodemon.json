@@ -1,0 +1,9 @@
+{
+    "env":
+            {
+                "MONGO_ATLAS_PWD": "SuperPass1981",
+                "JWT_KEY": "SecretBase"
+
+
+            }
+}
