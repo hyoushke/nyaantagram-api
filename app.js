@@ -2,10 +2,7 @@ const compression = require('compression');
 const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-
-
-//const swaggerUI = require('swagger-ui-express');
-//const swaggerDoc = require('./swagger.json');
+const cors = require('cors');
 
 
 const app = express();
@@ -18,71 +15,15 @@ const commentsRoutes = require('./api/routes/commentsRoutes');
 //const likesRoutes = require('./api/routes/likesRoutes');
 //const sharesRoutes = require('./api/routes/sharesRoutes');
 
-//app.use('/', swaggerUI.serve);
-//app.get('/swagger', swaggerUI.setup(swaggerDoc));
 
-
-
-const swaggerJsdoc = require('swagger-jsdoc');
-
-const options = {
-  swaggerDefinition: {
-    // Like the one described here: https://swagger.io/specification/#infoObject
-    info: {
-      title: 'Nyaantagram API',
-      version: '1.0.0',
-      description: 'Instagram Clone Project for Cat Pictures',
-    },
-    termsOfService: "http://swagger.io/terms/",
-  contact: {
-    email: "hyoushke@gmail.com"},
-  license:{
-    name: "Apache 2.0",
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html",
-  },
-    "schemes": [
-        "http",
-        "https"
-    ],
-    "consumes": [
-        "application/json"
-    ],
-    "produces": [
-        "application/json"
-    ],
-
-    securityDefinitions: {
-        ApiKeyAuth: {
-          type: 'apiKey',
-          //description: 'JWT authorization of an API',
-          name: 'Authorization',
-          in: 'header',
-        }
-    }
-
-  },
-  // List of files to be processes. You can also set globs './routes/*.js'
-  apis: ['./api/routes/*.js'],
-};
-
-const specs = swaggerJsdoc(options);
-
-const swaggerUi = require('swagger-ui-express');
-
-app.use(compression());
-
-app.use('/swagger', swaggerUi.serve, swaggerUi.setup(specs));
-
-
-
-
-
+app.use(cors());
 
 app.use(morgan('dev'));
 app.use('/uploads', express.static('uploads'));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
+/*
 app.use((req, res, next)=>{
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With', 'Content-Type', 'Accept', 'Authorization');
@@ -93,6 +34,7 @@ app.use((req, res, next)=>{
     }
     next();
 });
+*/
 
 app.use('/products', productRoutes);
 app.use('/users', usersRoutes);
